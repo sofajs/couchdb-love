@@ -129,9 +129,77 @@ describe('/couchdb-love',  { timeout: 4000 }, () => {
             Config.port = 5984;
             expect(err.name).to.equal('Error');
             expect(err.message).to.equal('Failed to destroy database \"test_uuser\".');
-            // console.log('err.name ' + err.name);
-            // console.log('err: ' + JSON.stringify(err));
-            // console.log('result: ' + JSON.stringify(result));
+            done();
+        });
+    });
+});
+
+describe('/couchdb-love as new object and different user',  { timeout: 4000 }, () => {
+
+    it('createdb succes', (done) => {
+
+        const Config2 = require('../lib/config2'); // custom path to config file.
+        const CLove2 = new require('../lib')(Config2);
+
+        const requestOptions = (session) => {
+
+            return new Promise((resolve, reject) => {
+
+                const options = {
+                    method: 'PUT',
+                    uri: Config2.host + ':' + Config2.port + '/test_user2',
+                    headers: {
+                        'X-Couchdb-WWW-Authenticate': 'Cookie',
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                        'Cookie': 'AuthSession=' + session.cookie
+                    },
+                    resolveWithFullResponse: true,
+                    json: true, // Automatically parses the JSON string in the response
+                    requestError: 'Failed to destroy database \"test_user\".'  // @note must have for error message.
+                };
+
+                resolve(options);
+            });
+        };
+
+        CLove2.request(requestOptions, (err, result) => {
+
+            expect(err).to.equal(null);
+            expect(result.statusCode).to.equal(201);
+            done();
+        });
+    });
+
+    it('deletedb success', (done) => {
+
+        const Config2 = require('../lib/config2'); // custom path to config file.
+        const CLove2 = new require('../lib')(Config2);
+
+        const requestOptions = (session) => {
+
+            return new Promise((resolve, reject) => {
+
+                const options = {
+                    method: 'DELETE',
+                    uri: Config2.host + ':' + Config2.port + '/test_user2',
+                    headers: {
+                        'X-Couchdb-WWW-Authenticate': 'Cookie',
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                        'Cookie': 'AuthSession=' + session.cookie
+                    },
+                    resolveWithFullResponse: true,
+                    json: true, // Automatically parses the JSON string in the response
+                    requestError: 'Failed to destroy database \"test_user\".'  // @note must have for error message.
+                };
+
+                resolve(options);
+            });
+        };
+
+        CLove2.request(requestOptions, (err, result) => {
+
+            expect(err).to.equal(null);
+            expect(result.statusCode).to.equal(200);
             done();
         });
     });
