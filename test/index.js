@@ -22,49 +22,16 @@ const expect = Code.expect;
 const it = lab.test;
 
 
-const Config = require('../lib/config');
+const Config = require('../lib/config'); // custom path to config file.
 const CLove = require('../lib')(Config);
 
 describe('/couchdb-love',  { timeout: 4000 }, () => {
+
 
     it('config loading', (done) => {
 
         console.log('CONFIG ' + JSON.stringify(Config));
         done();
-    });
-
-    it('delete db', (done) => {
-
-        // console.log('BUILD REQUEST ' + JSON.stringify(Config));
-
-        const requestOptions = (session) => {
-
-            return new Promise((resolve, reject) => {
-
-                const options = {
-                    method: 'DELETE',
-                    uri: Config.host + ':' + Config.port + '/uuser',
-                    headers: {
-                        'X-Couchdb-WWW-Authenticate': 'Cookie',
-                        'Content-Type': 'application/x-www-form-urlencoded',
-                        'Cookie': 'AuthSession=' + session.cookie
-                    },
-                    resolveWithFullResponse: true,
-                    json: true, // Automatically parses the JSON string in the response
-                    requestError: 'Failed to destroy database \"uuser\".'  // @note must have for error message.
-                };
-
-                resolve(options);
-            });
-        };
-
-        CLove.request(requestOptions, (err, result) => {
-
-            // console.log('err: ' + JSON.stringify(err));
-            // console.log('result: ' + JSON.stringify(result));
-            expect(result.statusCode).to.equal(200);
-            done(err);
-        });
     });
 
     it('make db', (done) => {
@@ -75,7 +42,7 @@ describe('/couchdb-love',  { timeout: 4000 }, () => {
 
                 const options = {
                     method: 'PUT',
-                    uri: Config.host + ':' + Config.port + '/uuser',
+                    uri: Config.host + ':' + Config.port + '/test_uuser',
                     headers: {
                         'X-Couchdb-WWW-Authenticate': 'Cookie',
                         'Content-Type': 'application/x-www-form-urlencoded',
@@ -83,7 +50,7 @@ describe('/couchdb-love',  { timeout: 4000 }, () => {
                     },
                     resolveWithFullResponse: true,
                     json: true, // Automatically parses the JSON string in the response
-                    requestError: 'Failed to destroy database \"uuser\".'  // @note must have for error message.
+                    requestError: 'Failed to destroy database \"test_uuser\".'  // @note must have for error message.
                 };
 
                 resolve(options);
@@ -93,11 +60,44 @@ describe('/couchdb-love',  { timeout: 4000 }, () => {
         CLove.request(requestOptions, (err, result) => {
 
             expect(result.statusCode).to.equal(201);
-            // console.log('err: ' + JSON.stringify(err));
-            // console.log('result: ' + JSON.stringify(result));
             done(err);
         });
     });
+
+
+    it('delete db', (done) => {
+
+        const requestOptions = (session) => {
+
+            return new Promise((resolve, reject) => {
+
+                const options = {
+                    method: 'DELETE',
+                    uri: Config.host + ':' + Config.port + '/test_uuser',
+                    headers: {
+                        'X-Couchdb-WWW-Authenticate': 'Cookie',
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                        'Cookie': 'AuthSession=' + session.cookie
+                    },
+                    resolveWithFullResponse: true,
+                    json: true, // Automatically parses the JSON string in the response
+                    requestError: 'Failed to destroy database \"test_uuser\".'  // @note must have for error message.
+                };
+
+                resolve(options);
+            });
+        };
+
+        process.env.NODE_ENV = 'production'; // for coverage
+
+        CLove.request(requestOptions, (err, result) => {
+
+            process.env.NODE_ENV = 'test'; // lab default is 'test'
+            expect(result.statusCode).to.equal(200);
+            done(err);
+        });
+    });
+
 
     it('request fail', (done) => {
 
@@ -109,7 +109,7 @@ describe('/couchdb-love',  { timeout: 4000 }, () => {
 
                 const options = {
                     method: 'DELETE',
-                    uri: Config.host + ':' + Config.port + '/uuser',
+                    uri: Config.host + ':' + Config.port + '/test_uuser',
                     headers: {
                         'X-Couchdb-WWW-Authenticate': 'Cookie',
                         'Content-Type': 'application/x-www-form-urlencoded',
@@ -117,7 +117,7 @@ describe('/couchdb-love',  { timeout: 4000 }, () => {
                     },
                     resolveWithFullResponse: true,
                     json: true, // Automatically parses the JSON string in the response
-                    requestError: 'Failed to destroy database \"uuser\".'  // @note must have for error message.
+                    requestError: 'Failed to destroy database \"test_uuser\".'  // @note must have for error message.
                 };
 
                 resolve(options);
@@ -128,7 +128,7 @@ describe('/couchdb-love',  { timeout: 4000 }, () => {
 
             Config.port = 5984;
             expect(err.name).to.equal('Error');
-            expect(err.message).to.equal('Failed to destroy database \"uuser\".');
+            expect(err.message).to.equal('Failed to destroy database \"test_uuser\".');
             // console.log('err.name ' + err.name);
             // console.log('err: ' + JSON.stringify(err));
             // console.log('result: ' + JSON.stringify(result));
