@@ -6,6 +6,10 @@
   "directories": {
     "test": "test"
   },
+  "engines": {
+    "node": "< 7.0.0||>= 6.9.4",
+    "npm": "< 4.0.0||>= 3.10.10"
+  },
   "scripts": {
     "test": "lab -a code -t 100 -L -v"
   },

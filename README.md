@@ -1,14 +1,33 @@
 # couchdb-love
 
-couchdb request builder.
-Logs performance of every query.
+simple couchdb love client
 
-### 1 init couchdb-love
+* [request-promise](https://www.npmjs.com/package/request-promise)  centric
+    * build requestOptions as for request-promise.
+
+* cookie authentication
+    * handles session management (creation & persistence) 
+    * inserts sessionid into headers.
+    * increased security     
+    * must configure couchdb for [cookie authentication](http://docs.couchdb.org/en/2.0.0/intro/security.html#cookie-authentication)
+
+
+* performance logging 
+    * query performance info logged at:
+        - {logpath}/stderr.log (error logging).
+        - {logpath}/stdout.log 
+    * log records are JSON objects.
+
+
+### configurations
+
+**local.ini**
 ```
-const CLove = require('../lib')(Config);
+[couch_httpd_auth]
+allow_persistent_cookies = true
 ```
 
-Where **Config** is:
+**config**
 ```
 {
   host: 'http://localhost',
@@ -18,6 +37,16 @@ Where **Config** is:
   logpath: __dirname + '/../log'
 };
 ```
+logpath: where peformance log statements are stored.
+
+### 1 init couchdb-love
+```
+const CLove = require('../lib')(Config);
+// or
+const CLove2 = new require('../lib')(Config2);
+```
+**note** use "new" when muliple users.   
+
 
 ### 2 Build a request with a promise
 ```
@@ -42,7 +71,19 @@ const requestOptions = (session) => {
     });
 ```
 
-### 3 pass requestOptions to couchdb-love
+request options must be built using a promise as illustrated above.
+couchdb-love utilizes promises and generator functions to build a simple request lifecycle.
+Lifecycle:
+* generate session
+* load requestOptions
+* begin logging
+* execute request
+* tail - print log statements
+* return result to user
+
+If you do not use a promise to load requestOptions, the lifecycle will break.
+
+### 3 next pass requestOptions to couchdb-love
 ```
     const CLove = require('couchdb-love')(Config);
 
@@ -56,6 +97,12 @@ const requestOptions = (session) => {
 ### 4 relax and make more request
 
 
+
+
+### Tests
+
+100% test coverage
+node v6.9.4
 
 depends on: 
 * couchdb-session 
